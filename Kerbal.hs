@@ -3,6 +3,7 @@ where
 
 data BodyMeta
     = BM { name  :: String}
+    deriving (Eq)
 
 data Body
     = St { meta   :: BodyMeta
@@ -13,6 +14,7 @@ data Body
          , celest :: Celestial}
     | Sh { meta   :: BodyMeta
          , dV     :: Float}
+    deriving (Eq)
 
 data Orbit
     = Landed
@@ -23,14 +25,15 @@ data Orbit
         , omega_big   :: Maybe Float
         , omega_small :: Maybe Float
         }
+    deriving (Eq)
 
-instance Eq (Body)
-    where
-      b1 == b2 = (meta b1) == (meta b2)
+-- instance Eq (Body)
+--     where
+--       b1 == b2 = (meta b1) == (meta b2)
 
-instance Eq (BodyMeta)
-    where
-      bm1 == bm2 = (name bm1) == (name bm2)
+-- instance Eq (BodyMeta)
+--     where
+--       bm1 == bm2 = (name bm1) == (name bm2)
                 
 
 instance Show (BodyMeta)
@@ -56,6 +59,7 @@ data Celestial
     = Celestial { r      :: Float
                 , mass   :: Float
                 , soi    :: Float}
+    deriving (Eq)
 
 type System = [(Body, Orbit)]
 
@@ -86,10 +90,18 @@ getDivid s f t
             ftU = zip fU tU
             res = head $ reverse $ filter (\(_,(x1,x2)) -> x1 == x2) $ zip [1..] ftU
 
--- pathBetween :: System -> From -> To -> [Body]
-pathBetween s f t
-    = ftU
-      where fU  = reverse $ getPathUp s f
-            tU  = reverse $ getPathUp s t
-            ftU = fU ++ tU
 
+takeUntil :: (a -> Bool) -> [a] -> [a]
+takeUntil f (x:xs)
+    | not (f x)
+    = x : (takeUntil f xs)
+
+    | otherwise
+    = []
+
+pathBetween :: System -> From -> To -> [Body]
+pathBetween s f t
+    = fU ++ d:(reverse tU)
+      where fU   = takeUntil (== d) $ getPathUp s f
+            tU   = takeUntil (== d) $ getPathUp s t
+            d    = snd $ getDivid s f t 
