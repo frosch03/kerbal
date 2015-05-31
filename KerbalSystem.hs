@@ -4,25 +4,25 @@ where
 import Kerbal
 
 -- kKerbol = St (BM "Kerbol") (Celestial 261.6e6        0.0         1.7565670e28)
-kKerbol = St (BM "Kerbol") (Celestial 261.6e6 1.7565670e28      (1/0)        )
-kMoho   = Pl (BM "Moho"  ) (Celestial   250e3 2.5263617e21  9646663          )
-kEve    = Pl (BM "Eve"   ) (Celestial   700e3 1.2244127e23 85109365          )
-kGilly  = Mn (BM "Gilly" ) (Celestial    13e3 1.2420512e17   126123.27       )
-kKerbin = Pl (BM "Kerbin") (Celestial   600e3 5.2915793e22 84159286          )
-kMun    = Mn (BM "Mun"   ) (Celestial   200e3 9.7600236e20  2429559.1        )
-kMinmus = Mn (BM "Minmus") (Celestial    60e3 2.6457897e19  2247428.4        )
-kDuna   = Pl (BM "Duna"  ) (Celestial   320e3 4.5154812e21 47921949          )
-kIke    = Mn (BM "Ike"   ) (Celestial   130e3 2.7821949e20  1049598.9        )
-kDres   = Pl (BM "Dres"  ) (Celestial   138e3 3.2191322e20 32832840          )
-kJool   = Pl (BM "Jool"  ) (Celestial     6e6 4.2332635e24        2.4559852e9)
-kLaythe = Mn (BM "Laythe") (Celestial   500e3 2.9397663e22  3723645.8        )
-kVall   = Mn (BM "Vall"  ) (Celestial   300e3 3.1088028e21  2406401.4        )
-kTylo   = Mn (BM "Tylo"  ) (Celestial   600e3 4.2332635e22 10856518          )
-kBop    = Mn (BM "Bop"   ) (Celestial    65e3 3.7261536e19  1221060.9        )
-kPol    = Mn (BM "Pol"   ) (Celestial    44e3 1.0813636e19  1042138.9        )
-kEeloo  = Pl (BM "Eeloo" ) (Celestial   210e3 1.1149358e21        1.1908294e8)
+kKerbol = St (Object "Kerbol") (Celestial 261.6e6 1.7565670e28      (1/0)        )
+kMoho   = Pl (Object "Moho"  ) (Celestial   250e3 2.5263617e21  9646663          )
+kEve    = Pl (Object "Eve"   ) (Celestial   700e3 1.2244127e23 85109365          )
+kGilly  = Mn (Object "Gilly" ) (Celestial    13e3 1.2420512e17   126123.27       )
+kKerbin = Pl (Object "Kerbin") (Celestial   600e3 5.2915793e22 84159286          )
+kMun    = Mn (Object "Mun"   ) (Celestial   200e3 9.7600236e20  2429559.1        )
+kMinmus = Mn (Object "Minmus") (Celestial    60e3 2.6457897e19  2247428.4        )
+kDuna   = Pl (Object "Duna"  ) (Celestial   320e3 4.5154812e21 47921949          )
+kIke    = Mn (Object "Ike"   ) (Celestial   130e3 2.7821949e20  1049598.9        )
+kDres   = Pl (Object "Dres"  ) (Celestial   138e3 3.2191322e20 32832840          )
+kJool   = Pl (Object "Jool"  ) (Celestial     6e6 4.2332635e24        2.4559852e9)
+kLaythe = Mn (Object "Laythe") (Celestial   500e3 2.9397663e22  3723645.8        )
+kVall   = Mn (Object "Vall"  ) (Celestial   300e3 3.1088028e21  2406401.4        )
+kTylo   = Mn (Object "Tylo"  ) (Celestial   600e3 4.2332635e22 10856518          )
+kBop    = Mn (Object "Bop"   ) (Celestial    65e3 3.7261536e19  1221060.9        )
+kPol    = Mn (Object "Pol"   ) (Celestial    44e3 1.0813636e19  1042138.9        )
+kEeloo  = Pl (Object "Eeloo" ) (Celestial   210e3 1.1149358e21        1.1908294e8)
         
-kSystem :: System
+kSystem :: System Railed
 kSystem
     = [ (kGilly,   (O { centerBody = kEve
                       , apoapsis   = (  8.825e6    -  700e3)
