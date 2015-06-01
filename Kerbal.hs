@@ -2,43 +2,6 @@
 module Kerbal
 where
 
--- data BodyMeta
---     = BM { name  :: String}
---     deriving (Eq)
-
-         
--- data Body
---     = St { object :: Object
---          , celest :: Celestial}
---     | Pl { object :: Object
---          , celest :: Celestial}
---     | Mn { object :: Object
---          , celest :: Celestial}
---     | Sh { object :: Object
---          , dV     :: Double}
---     deriving (Eq)
-
--- data Star
---     = Star { object :: O}
-
--- data Ship
---     = Ship { object :: Object
---            , dV     :: Double }
-
--- type Planet = Celestial
--- type Moon   = Celestial
--- type Star   = Celestial
-
-
-
--- class Objects a where
---     name :: a -> String
-
--- class Celestials a where
---     r   :: a -> Double
---     m   :: a -> Double
---     soi :: a -> Double
-
 type GravConst = Double
 
 var_G :: GravConst
@@ -72,6 +35,18 @@ object (St o _) = o
 object (Pl o _) = o
 object (Mn o _) = o
 object (Sh o _) = o
+
+isRailed :: Body a -> Bool
+isRailed (St _ _) = True
+isRailed (Pl _ _) = True
+isRailed (Mn _ _) = True
+isRailed (Sh _ _) = False
+
+isMovable :: Body a -> Bool
+isMovable (St _ _) = False
+isMovable (Pl _ _) = False
+isMovable (Mn _ _) = False
+isMovable (Sh _ _) = True
 
 celestial :: Body Railed -> Celestial
 celestial (St _ c) = c
@@ -126,8 +101,8 @@ instance Show (Orbit)
 
 
 
-type From = Body Railed
-type To   = Body Railed
+type From   = Body Railed
+type To     = Body Railed
 type Radius = Double -- Radius of Orbit at the current Position
 semiMajor :: Orbit -> Double
 semiMajor o
@@ -138,25 +113,27 @@ v o radius =  sqrt $ mue * ( (2/radius) - (1/(semiMajor o)) )
     where
       mue = var_G * (m . celestial . centerBody $ o)
 
-getNextUp :: System Railed -> From -> Maybe To
+-- get that transition to the (System a) type working
+
+getNextUp :: System a -> From -> Maybe To
 getNextUp s f
     | (soi . celestial $ f) < (1/0)
     = Just . centerBody . snd . head $ filter ((== f) . fst) s
-      -- where (nxtB, nxtO) = 
 
     | otherwise
     = Nothing
 
-getPathUp :: System Railed -> From -> [To]
+getPathUp :: System a -> From -> [To]
 getPathUp s f
     = func (Just f)
-      where func (Nothing) = []
-            func (Just b)  = b : func (getNextUp s b)
+      where
+        func (Nothing) = []
+        func (Just b)  = b : func (getNextUp s b)
                           
 
-getDivid :: System Railed -> From -> To -> (Int, To)
+getDivid :: System a -> From -> To -> (Int, To)
 getDivid s f t
-    = (,) (fst res) (fst . snd $ res)
+    = ((fst res), (fst . snd $ res))
       where fU  = reverse $ getPathUp s f
             tU  = reverse $ getPathUp s t
             ftU = zip fU tU
@@ -171,24 +148,32 @@ takeUntil f (x:xs)
     | otherwise
     = []
 
-pathBetween :: System Railed -> From -> To -> [To]
+pathBetween :: System a -> From -> To -> [To]
 pathBetween s f t
     = fU ++ (d:tUR)
       where (fU, d, tUR) = pathBetween' s f t
 
--- Next: Path between combined with the orbits of the bodys, to
--- calculate the deltaV between that orbits
+pathOBetween :: System a -> From -> To -> [(Body Railed, Orbit)]
+pathOBetween s f t
+    = (zip fU fU') ++ (zip tUR tUR')
+      where (fU, d, tUR) = pathBetween' s f t
+            fU', tUR' :: [Orbit]
+            fU'  = map (\x -> snd . head $ filter ((== x) . fst) s) fU
+            tUR' = map (\x -> snd . head $ filter ((== x) . fst) s) tUR
+            d'   = (\x -> snd . head $ filter ((== x) . fst) s) d
 
-pathBetween_ :: System Railed -> From -> To -> [To]
+pathBetween_ :: System a -> From -> To -> [To]
 pathBetween_ s f t
     = fU ++ tUR
       where (fU, d, tUR) = pathBetween' s f t
 
                            
-pathBetween' :: System Railed -> From -> To -> ([To], To, [To])
+pathBetween' :: System a -> From -> To -> ([To], To, [To])
 pathBetween' s f t
     = (fU, d, (reverse tU))
       where fU   = takeUntil (== d) $ getPathUp s f
             tU   = takeUntil (== d) $ getPathUp s t
             d    = snd $ getDivid s f t 
-                   
+
+speeds :: [(Body Railed, Orbit)] -> [Speed]
+speeds = map (\(_, x) -> v x (semiMajor x))
