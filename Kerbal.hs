@@ -11,7 +11,6 @@ var_G :: GravConst
 var_G = 6.674e-11
 
 
-
 data Object
     = Object { name :: String }
       deriving (Eq)
@@ -25,57 +24,10 @@ data Celestial
 
 type DeltaV = Double
 
--- type Railed  = (Object, Celestial)
--- type Movable = (Object, DeltaV)
-
 data Body
     = Railed  { object :: Object, celestial :: Celestial }
     | Movable { object :: Object, celestial :: Celestial, deltaV :: DeltaV }
     deriving (Eq)
-
--- data Body where
---     St :: Object -> Celestial -> Body
---     Pl :: Object -> Celestial -> Body
---     Mn :: Object -> Celestial -> Body
---     Sh :: Object -> DeltaV    -> Body Movable
-
-
--- class IsRailed a where
---     toRailed :: Body -> Body
-               
--- class IsMovable a where
---     toMovable :: Body -> Body Movable
-               
--- instance IsRailed (Railed) where
---     toRailed x@(St _ _) = x
---     toRailed x@(Pl _ _) = x
---     toRailed x@(Mn _ _) = x
-
--- instance IsMovable (Movable) where
---     toMovable x@(Sh _ _) = x
-    
--- object :: Body -> Object
--- object (St o _) = o
--- object (Pl o _) = o
--- object (Mn o _) = o
--- object (Sh o _) = o
-
--- celestial :: (IsRailed a) => Body -> Celestial
--- celestial (St _ c) = c
--- celestial (Pl _ c) = c
--- celestial (Mn _ c) = c
-
--- deltaV :: (IsMovable a) => Body ->  DeltaV
--- deltaV (Sh _ d) = d
-
-
--- instance Eq (Body) where
---     (St o c) == x = o == object x && c == (celestial x)
---     (Pl o c) == x = o == object x && c == (celestial x)
---     (Mn o c) == x = o == object x && c == (celestial x)
-
--- instance Eq (Body Movable) where
---     (Sh o d) == x = o == object x && d == (deltaV x)
 
 data Orbit
     = Landed
@@ -89,22 +41,12 @@ data Orbit
    deriving (Eq)
 
 type System = [(Body, Orbit)]
--- data System a
---     =  (.-) (Body) (Orbit)
-
 
 type Speed = Double
 
 instance Show Object
     where
       show = name
-
--- instance Show (Body)
---     where
---       show x@(St _ _) = '[':(show . object $ x) ++ "]"
---       show x@(Pl _ _) = '<':(show . object $ x) ++ ">"
---       show x@(Mn _ _) = '|':(show . object $ x) ++ "|"
---       show x@(Sh _ _) = '{':(show . object $ x) ++ "}"
 
 instance Show Celestial
     where
@@ -148,8 +90,6 @@ instance Show Orbit
           . (showString $ show . periapsis $ obt)
           . (showString ")")
 
--- type From   = Body
--- type To     = Body
 type Radius = Double -- Radius of Orbit at the current Position
 semiMajor   :: Orbit -> Double
 semiMajor o
@@ -161,8 +101,6 @@ v :: Orbit -> Radius -> Speed
 v o radius =  sqrt $ mue * ( (2/radius) - (1/(semiMajor o)) ) 
     where
       mue = var_G * (m . celestial . centerBody $ o)
-
--- get that transition to the (System a) type working
 
 getNextUp :: System -> Body -> Maybe (Body)
 getNextUp s f
