@@ -5,71 +5,87 @@ import Kerbal
 
 kMoho
     = Railed (Object "Moho"  )
-      (Celestial   250e3 2.5263617e21  9646663 [])
+      (Celestial   250e3 2.5263617e21  9646663 Empty)
+
 kGilly
     = Railed (Object "Gilly" )
-      (Celestial 13e3 1.2420512e17 126123.27 []) 
+      (Celestial 13e3 1.2420512e17 126123.27 Empty) 
+
 kEve
     = Railed (Object "Eve")
       (Celestial 700e3 1.2244127e23 85109365
-                     [ (kGilly, kGillyOrbit) ]) 
+             (System [ (kGillyOrbit, kGilly) ])) 
+
 kMun
     = Railed (Object "Mun" )
-      (Celestial 200e3 9.7600236e20 2429559.1 [])
+      (Celestial 200e3 9.7600236e20 2429559.1 Empty)
+
 kMinmus
     = Railed (Object "Minmus")
-      (Celestial 60e3 2.6457897e19 2247428.4 [])
+      (Celestial 60e3 2.6457897e19 2247428.4 Empty)
+
 kKerbin
     = Railed (Object "Kerbin")
       (Celestial 600e3 5.2915793e22 84159286
-                     [ (kMun, kMunOrbit)
-                     , (kMinmus, kMinmusOrbit) ])
+             (System [ (kMunOrbit, kMun)
+                     , (kMinmusOrbit, kMinmus) ]))
+
 kIke
     = Railed (Object "Ike" )
-      (Celestial 130e3 2.7821949e20 1049598.9 [])
+      (Celestial 130e3 2.7821949e20 1049598.9 Empty)
+
 kDres
     = Railed (Object "Dres" )
-      (Celestial 138e3 3.2191322e20 32832840 [])
+      (Celestial 138e3 3.2191322e20 32832840 Empty)
+
 kDuna
     = Railed (Object "Duna" )
       (Celestial 320e3 4.5154812e21 47921949
-                     [ (kIke, kIkeOrbit)
-                     , (kDres, kDresOrbit) ])
+             (System [ (kIkeOrbit, kIke)
+                     , (kDresOrbit, kDres) ]))
+
 kLaythe
     = Railed (Object "Laythe")
-      (Celestial 500e3 2.9397663e22 3723645.8 [])
+      (Celestial 500e3 2.9397663e22 3723645.8 Empty)
+
 kVall
     = Railed (Object "Vall" )
-      (Celestial 300e3 3.1088028e21 2406401.4 [])
+      (Celestial 300e3 3.1088028e21 2406401.4 Empty)
+
 kTylo
     = Railed (Object "Tylo" )
-      (Celestial 600e3 4.2332635e22 10856518 [])
+      (Celestial 600e3 4.2332635e22 10856518 Empty)
+
 kBop
     = Railed (Object "Bop" )
-      (Celestial 65e3 3.7261536e19 1221060.9 [])
+      (Celestial 65e3 3.7261536e19 1221060.9 Empty)
+
 kPol
     = Railed (Object "Pol" )
-      (Celestial 44e3 1.0813636e19 1042138.9 [])
+      (Celestial 44e3 1.0813636e19 1042138.9 Empty)
+
 kJool
     = Railed (Object "Jool" )
       (Celestial 6e6 4.2332635e24 2.4559852e9
-                     [ (kLaythe, kLaytheOrbit)
-                     , (kVall, kVallOrbit)
-                     , (kTylo, kTyloOrbit)
-                     , (kBop, kBopOrbit)
-                     , (kPol, kPolOrbit) ])
+             (System [ (kLaytheOrbit, kLaythe)
+                     , (kVallOrbit, kVall)
+                     , (kTyloOrbit, kTylo)
+                     , (kBopOrbit, kBop)
+                     , (kPolOrbit, kPol) ]))
+
 kEeloo
     = Railed (Object "Eeloo" )
-      (Celestial 210e3 1.1149358e21 1.1908294e8 [])
+      (Celestial 210e3 1.1149358e21 1.1908294e8 Empty)
+
 kKerbol
     = Railed (Object "Kerbol")
       (Celestial 261.6e6 1.7565670e28 (1/0)
-                     [ (kMoho, kMohoOrbit)
-                     , (kEve, kEveOrbit)
-                     , (kKerbin, kKerbinOrbit)
-                     , (kDuna, kDunaOrbit)
-                     , (kJool, kJoolOrbit)
-                     , (kEeloo, kEelooOrbit) ])
+             (System [ (kMohoOrbit, kMoho)
+                     , (kEveOrbit, kEve)
+                     , (kKerbinOrbit, kKerbin)
+                     , (kDunaOrbit, kDuna)
+                     , (kJoolOrbit, kJool)
+                     , (kEelooOrbit, kEeloo) ]))
 
 kGillyOrbit
     = O { centerBody = kEve

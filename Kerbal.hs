@@ -3,7 +3,8 @@ module Kerbal
 where
 
 -- import Debug.Trace
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, catMaybes)
+import Data.List (find)
 
 type GravConst = Double
 
@@ -19,7 +20,7 @@ data Celestial
     = Celestial { r      :: Double
                 , m      :: Double
                 , soi    :: Double
-                , system :: System
+                , system :: System Body
                 } deriving (Eq)
 
 type DeltaV = Double
@@ -27,7 +28,10 @@ type DeltaV = Double
 data Body
     = Railed  { object :: Object, celestial :: Celestial }
     | Movable { object :: Object, celestial :: Celestial, deltaV :: DeltaV }
-    deriving (Eq)
+
+instance Eq Body where
+    (Railed o1 _) == (Railed o2 _) = o1 == o2
+    (Movable o1 _ _) == (Movable o2 _ _) = o1 == o2
 
 data Orbit
     = Landed
@@ -38,9 +42,12 @@ data Orbit
         , omega_big   :: Maybe Double -- Longitude of Ascending Node
         , omega_small :: Maybe Double -- Argument of Periapsis
         }
-   deriving (Eq)
+  deriving (Eq)
 
-type System = [(Body, Orbit)]
+data System a
+    = Empty
+    | System [(Orbit, a)]
+    deriving (Eq)
 
 type Speed = Double
 
@@ -50,7 +57,7 @@ instance Show Object
 
 instance Show Celestial
     where
-      showsPrec d (Celestial r m soi s)
+      showsPrec d (Celestial r m soi Empty)
           = (showString "r:")
           . ((show r) ++)
           . (showString ", ")
@@ -60,10 +67,22 @@ instance Show Celestial
           . (if (soi < (1/0))
              then ((show soi) ++)
              else (showString "inf"))
-          . (fun s)
+      showsPrec d (Celestial r m soi (System s))
+          = (showChar '(')
+          . (showString . show $ length s)
+          . (showChar ')')
+          . (showString "r:")
+          . ((show r) ++)
+          . (showString ", ")
+          . (showString "m:")
+          . ((show m) ++)
+          . (showString ", soi:")
+          . (if (soi < (1/0))
+             then ((show soi) ++)
+             else (showString "inf"))
           where
-            fun []     = (showString "")
-            fun (x:xs) = (showChar '\n') . (showsPrec d x) . (fun xs)
+            -- fun []     = (showChar '\n')
+            -- fun (x:xs) = (showChar '\n') . (showsPrec d $ snd x) . (fun xs)
                            
 
 instance Show Body
@@ -80,7 +99,7 @@ instance Show Body
 
 instance Show Orbit
     where
-      show Landed = "Landed"
+      showsPrec _  Landed = showString "Landed"
       showsPrec _ obt
           = (showString "Around ")
           . (showString $ show . object . centerBody $ obt)
@@ -90,27 +109,54 @@ instance Show Orbit
           . (showString $ show . periapsis $ obt)
           . (showString ")")
 
+instance (Show a) => Show (System a)
+    where
+      showsPrec _ (Empty)     = (showString "")
+      showsPrec _ (System []) = (showString "")
+      showsPrec _ (System (sys:syss))
+          = (showString . show . snd $ sys)
+          . (showString . show . fst $ sys)
+          . (showChar '\n')
+          . (showString . show $ (System syss))
+
+instance Functor System where
+    fmap f (System xs) = System $ zip os (fmap f xs')
+         where (os, xs') = unzip xs 
+
 type Radius = Double -- Radius of Orbit at the current Position
 semiMajor   :: Orbit -> Double
 semiMajor o
     = 0.5 * ((apoapsis o) + (periapsis o) + (2 * (r . celestial . centerBody $ o)))
 
       
+firstJust :: [Maybe a] -> Maybe a
+firstJust x = find (const True) (catMaybes x)
 
 v :: Orbit -> Radius -> Speed
 v o radius =  sqrt $ mue * ( (2/radius) - (1/(semiMajor o)) ) 
     where
       mue = var_G * (m . celestial . centerBody $ o)
 
-getNextUp :: System -> Body -> Maybe (Body)
-getNextUp s f
-    | (soi . celestial $ f) < (1/0)
-    = Just $ centerBody . snd . head $ filter ((== f) . fst) s
+getNextUp :: System Body -> Body -> Maybe Body
+getNextUp Empty _ = Nothing
+getNextUp (System s) f
+    | (length $ filter ((== f) . snd) s) > 0
+    = Just $ centerBody . fst . head $ filter ((== f) . snd) s
+
+    | (length $ filter ((== f) . snd) s) == 0
+    = firstJust $ map (((flip getNextUp) f) . system . celestial . snd) s
 
     | otherwise
     = Nothing
 
-getPathUp :: System -> Body -> [(Body)]
+
+-- data System a
+--     = Empty
+--     | System [(Orbit, a)]
+--     deriving (Eq)
+      
+
+getPathUp :: System Body -> Body -> [Body]
 getPathUp s f
     = func (Just f)
       where
@@ -118,7 +164,7 @@ getPathUp s f
         func (Just b)  = b : func (getNextUp s b)
                           
 
-getDivid :: System -> Body -> (Body) -> (Int, (Body))
+getDivid :: System Body -> Body -> Body -> (Int, Body)
 getDivid s f t
     = ((fst res), (fst . snd $ res))
       where fU  = reverse $ getPathUp s f
@@ -135,27 +181,27 @@ takeUntil f (x:xs)
     | otherwise
     = []
 
-pathBetween :: System -> Body -> (Body) -> [(Body)]
+pathBetween :: System Body -> Body -> Body -> [Body]
 pathBetween s f t
     = fU ++ (d:tUR)
       where (fU, d, tUR) = pathBetween' s f t
 
-pathOBetween :: System -> Body -> (Body) -> [(Body, Orbit)]
-pathOBetween s f t
-    = (zip fU fU') ++ (zip tUR tUR')
-      where (fU, d, tUR) = pathBetween' s f t
-            fU', tUR' :: [Orbit]
-            fU'  = map (\x -> snd . head $ filter ((== x) . fst) s) fU
-            tUR' = map (\x -> snd . head $ filter ((== x) . fst) s) tUR
-            d'   = (\x -> snd . head $ filter ((== x) . fst) s) d
+-- pathOBetween :: System Body -> Body -> Body -> [(Body, Orbit)]
+-- pathOBetween s f t
+--     = (zip fU fU') ++ (zip tUR tUR')
+--       where (fU, d, tUR) = pathBetween' s f t
+--             fU', tUR' :: [Orbit]
+--             fU'  = map (\x -> snd . head $ filter ((== x) . fst) s) fU
+--             tUR' = map (\x -> snd . head $ filter ((== x) . fst) s) tUR
+--             d'   = (\x -> snd . head $ filter ((== x) . fst) s) d
 
-pathBetween_ :: System -> Body -> (Body) -> [(Body)]
+pathBetween_ :: System Body -> Body -> Body -> [Body]
 pathBetween_ s f t
     = fU ++ tUR
       where (fU, d, tUR) = pathBetween' s f t
 
                            
-pathBetween' :: System -> Body -> (Body) -> ([(Body)], (Body), [(Body)])
+pathBetween' :: System Body -> Body -> Body -> ([Body], Body, [Body])
 pathBetween' s f t
     = (fU, d, (reverse tU))
       where fU   = takeUntil (== d) $ getPathUp s f
