@@ -181,19 +181,29 @@ takeUntil f (x:xs)
     | otherwise
     = []
 
-pathBetween :: System Body -> Body -> Body -> [Body]
-pathBetween s f t
-    = fU ++ (d:tUR)
-      where (fU, d, tUR) = pathBetween' s f t
-
--- pathOBetween :: System Body -> Body -> Body -> [(Body, Orbit)]
--- pathOBetween s f t
---     = (zip fU fU') ++ (zip tUR tUR')
+-- pathBetween :: System Body -> Body -> Body -> [Body]
+-- pathBetween s f t
+--     = fU ++ (d:tUR)
 --       where (fU, d, tUR) = pathBetween' s f t
---             fU', tUR' :: [Orbit]
---             fU'  = map (\x -> snd . head $ filter ((== x) . fst) s) fU
---             tUR' = map (\x -> snd . head $ filter ((== x) . fst) s) tUR
---             d'   = (\x -> snd . head $ filter ((== x) . fst) s) d
+
+sOrbitInSystem :: Body -> System Body -> Maybe Orbit
+sOrbitInSystem b Empty = Nothing
+sOrbitInSystem b s@(System sys)
+    | (length $ filter ((== b) . snd) sys) > 0
+    = Just . fst . head $ (filter ((== b) . snd) sys)
+
+    | (length $ filter ((== b) . snd) sys) == 0
+    = firstJust $ map (\x -> (sOrbitInSystem b) . system . celestial . snd $ x) sys
+
+pathOBetween :: System Body -> Body -> Body -> [(Body, Orbit)]
+pathOBetween Empty _ _ = []
+pathOBetween s f t
+    = (zip fU fU') ++ (zip tUR tUR')
+      where (fU, d, tUR) = pathBetween' s f t
+            fU', tUR' :: [Orbit]
+            fU'  = map (\x -> fromJust $ x `sOrbitInSystem` s) fU
+            tUR' = map (\x -> fromJust $ x `sOrbitInSystem` s) tUR
+            d'   =     (\x -> fromJust $ x `sOrbitInSystem` s) d
 
 pathBetween_ :: System Body -> Body -> Body -> [Body]
 pathBetween_ s f t
