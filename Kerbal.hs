@@ -16,26 +16,26 @@ data Object
     = Object { name :: String }
       deriving (Eq)
 
-data Celestial
+data Celestial a
     = Celestial { r      :: Double
                 , m      :: Double
                 , soi    :: Double
-                , system :: System Body
+                , system :: System a
                 } deriving (Eq)
 
 type DeltaV = Double
 
 data Body
-    = Railed  { object :: Object, celestial :: Celestial }
-    | Movable { object :: Object, celestial :: Celestial, deltaV :: DeltaV }
+    = Railed  { object :: Object, celestial :: Celestial Body }
+    | Movable { object :: Object, celestial :: Celestial Body, deltaV :: DeltaV }
 
 instance Eq Body where
-    (Railed o1 _) == (Railed o2 _) = o1 == o2
+    (Railed  o1 _)   == (Railed  o2 _)   = o1 == o2
     (Movable o1 _ _) == (Movable o2 _ _) = o1 == o2
 
-data Orbit
+data Orbit a
     = Landed
-    | O { centerBody  :: Body
+    | O { centerBody  :: a
         , apoapsis    :: Double
         , periapsis   :: Double
         , inclination :: Maybe Double
@@ -44,9 +44,28 @@ data Orbit
         }
   deriving (Eq)
 
+type Height = Double
+mkOrbit :: Body -> Height -> Height -> Orbit Body
+mkOrbit b ap per
+    = O { centerBody  = b
+        , apoapsis    = ap
+        , periapsis   = per
+        , inclination = Nothing
+        , omega_big   = Nothing
+        , omega_small = Nothing }
+      
+mkCircOrbit :: Body -> Height -> Orbit Body
+mkCircOrbit b h
+    = O { centerBody  = b
+        , apoapsis    = h
+        , periapsis   = h
+        , inclination = Nothing
+        , omega_big   = Nothing
+        , omega_small = Nothing }
+
 data System a
     = Empty
-    | System [(Orbit, a)]
+    | System [(Orbit Body, a)]
     deriving (Eq)
 
 type Speed = Double
@@ -55,7 +74,7 @@ instance Show Object
     where
       show = name
 
-instance Show Celestial
+instance Show (Celestial a)
     where
       showsPrec d (Celestial r m soi Empty)
           = (showString "r:")
@@ -97,12 +116,12 @@ instance Show Body
           . ((show d) ++)
           . ((show c) ++)
 
-instance Show Orbit
+instance (Show a) => Show (Orbit a)
     where
       showsPrec _  Landed = showString "Landed"
       showsPrec _ obt
           = (showString "Around ")
-          . (showString $ show . object . centerBody $ obt)
+          . (showString $ show . centerBody $ obt)
           . (showString " ( ")
           . (showString $ show . apoapsis $ obt)
           . (showString " / ")
@@ -121,10 +140,12 @@ instance (Show a) => Show (System a)
 
 instance Functor System where
     fmap f (System xs) = System $ zip os (fmap f xs')
-         where (os, xs') = unzip xs 
+         where
+           (os, xs') = unzip xs
+                           
 
 type Radius = Double -- Radius of Orbit at the current Position
-semiMajor   :: Orbit -> Double
+semiMajor   :: Orbit Body -> Double
 semiMajor o
     = 0.5 * ((apoapsis o) + (periapsis o) + (2 * (r . celestial . centerBody $ o)))
 
@@ -132,10 +153,35 @@ semiMajor o
 firstJust :: [Maybe a] -> Maybe a
 firstJust x = find (const True) (catMaybes x)
 
-v :: Orbit -> Radius -> Speed
+v :: Orbit Body -> Radius -> Speed
 v o radius =  sqrt $ mue * ( (2/radius) - (1/(semiMajor o)) ) 
     where
       mue = var_G * (m . celestial . centerBody $ o)
+
+v_e :: Body -> Speed
+v_e b =  sqrt $ 2 * mue / (r . celestial $ b) 
+    where
+      mue = var_G * (m . celestial $ b)
+
+
+-- v1 = sqrt(mue/r1) * (sqrt((2*r2)/(r1+r2)) -1)
+-- v2 = sqrt(mue/r2) * (1 - (sqrt((2*r1)/(r1+r2))))
+
+hohmann :: Orbit Body -> Orbit Body -> (Double, Double)
+hohmann o1 o2
+    |   centerBody o1 /= centerBody o2
+      || o1 == o2
+    = (0,0)
+hohmann o1 o2
+    = ( sqrt(mue/r1) * (sqrt((2*r2)/(r1+r2)) - 1) 
+      , sqrt(mue/r2) * (1 - (sqrt((2*r1)/(r1+r2))))
+      )
+    where 
+      mue = var_G * (m . celestial . centerBody $ o1)
+      r1 = (r . celestial . centerBody $ o1) + (apoapsis o1)
+      r2 = (r . celestial . centerBody $ o2) + (apoapsis o2)
+
+
 
 getNextUp :: System Body -> Body -> Maybe Body
 getNextUp Empty _ = Nothing
@@ -181,12 +227,7 @@ takeUntil f (x:xs)
     | otherwise
     = []
 
--- pathBetween :: System Body -> Body -> Body -> [Body]
--- pathBetween s f t
---     = fU ++ (d:tUR)
---       where (fU, d, tUR) = pathBetween' s f t
-
-sOrbitInSystem :: Body -> System Body -> Maybe Orbit
+sOrbitInSystem :: Body -> System Body -> Maybe (Orbit Body)
 sOrbitInSystem b Empty = Nothing
 sOrbitInSystem b s@(System sys)
     | (length $ filter ((== b) . snd) sys) > 0
@@ -195,12 +236,12 @@ sOrbitInSystem b s@(System sys)
     | (length $ filter ((== b) . snd) sys) == 0
     = firstJust $ map (\x -> (sOrbitInSystem b) . system . celestial . snd $ x) sys
 
-pathOBetween :: System Body -> Body -> Body -> [(Body, Orbit)]
+pathOBetween :: System Body -> Body -> Body -> [(Body, (Orbit Body))]
 pathOBetween Empty _ _ = []
 pathOBetween s f t
     = (zip fU fU') ++ (zip tUR tUR')
       where (fU, d, tUR) = pathBetween' s f t
-            fU', tUR' :: [Orbit]
+            fU', tUR' :: [Orbit Body]
             fU'  = map (\x -> fromJust $ x `sOrbitInSystem` s) fU
             tUR' = map (\x -> fromJust $ x `sOrbitInSystem` s) tUR
             d'   =     (\x -> fromJust $ x `sOrbitInSystem` s) d
@@ -218,5 +259,5 @@ pathBetween' s f t
             tU   = takeUntil (== d) $ getPathUp s t
             d    = snd $ getDivid s f t 
 
-speeds :: [(Body, Orbit)] -> [Speed]
+speeds :: [(Body, (Orbit Body))] -> [Speed]
 speeds = map (\(_, x) -> v x (semiMajor x))
