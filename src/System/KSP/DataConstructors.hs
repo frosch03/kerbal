@@ -1,3 +1,11 @@
+{-|
+Module      : DataConstructors
+Description : The Module "System.KSP.DataConstructors" imports everything 
+              that is a data constructor and exports them.
+License     : CC0
+Maintainer  : frosch03@frosch03.de
+Stability   : experimental
+-}
 module System.KSP.DataConstructors
     ( Object(..)
     , Celestial(..)
@@ -8,9 +16,6 @@ module System.KSP.DataConstructors
     , KSystem
     )
 where
-
--- | The Module "System.KSP.DataConstructors" imports everything that is a
--- data constructor and exports them. 
 
 import System.KSP.Datatype.Body
 import System.KSP.Datatype.Orbit

@@ -1,3 +1,10 @@
+{-|
+Module      : Datatypes
+Description : Helper module to get data types and functions on them.
+License     : CC0
+Maintainer  : frosch03@frosch03.de
+Stability   : experimental
+-}
 module System.KSP.Datatypes
     ( Object(..)
     , Celestial(..)

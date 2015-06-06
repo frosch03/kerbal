@@ -1,3 +1,11 @@
+{-|
+Module      : KSP
+Description : Kind of the main module. Start the interactive haskell
+              session with this module loaded to try things out.
+License     : CC0
+Maintainer  : frosch03@frosch03.de
+Stability   : experimental
+-}
 module System.KSP.KSP
 where
 
