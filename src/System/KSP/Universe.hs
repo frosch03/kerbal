@@ -1,7 +1,7 @@
-module KSP.Universe
+module System.KSP.Universe
 where
 
-import KSP.Datatypes
+import System.KSP.Datatypes
 
 kMoho
     = Railed (Object "Moho"  )

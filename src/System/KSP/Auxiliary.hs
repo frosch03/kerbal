@@ -1,4 +1,4 @@
-module KSP.Auxiliary
+module System.KSP.Auxiliary
     ( takeUntil
     , firstJust
     )

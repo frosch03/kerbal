@@ -1,4 +1,4 @@
-module KSP.Datatype.Object
+module System.KSP.Datatype.Object
 where
 
  ----------

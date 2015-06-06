@@ -1,4 +1,4 @@
-module KSP.Datatype.Orbit
+module System.KSP.Datatype.Orbit
 where
 
  ---------

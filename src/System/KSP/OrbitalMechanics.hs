@@ -1,7 +1,7 @@
-module KSP.OrbitalMechanics
+module System.KSP.OrbitalMechanics
 where
 
-import KSP.DataConstructors
+import System.KSP.DataConstructors
 
 
 type Radius = Double -- Radius of Orbit at the current Position

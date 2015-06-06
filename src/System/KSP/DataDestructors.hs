@@ -1,4 +1,4 @@
-module KSP.DataDestructors
+module System.KSP.DataDestructors
     ( getNextUp
     , getPathUp
     , getDivid
@@ -10,9 +10,9 @@ module KSP.DataDestructors
     )
 where
 
-import KSP.DataConstructors
-import KSP.Auxiliary
-import KSP.OrbitalMechanics
+import System.KSP.DataConstructors
+import System.KSP.Auxiliary
+import System.KSP.OrbitalMechanics
 
 import Data.Maybe (fromJust)
 

@@ -1,9 +1,39 @@
-module KSP.Datatype.Celestial
-    ( Celestial(..)
+module System.KSP.Datatype.Body
+    ( Body(..)
+    , DeltaV
+    , Celestial(..)
+    , Object(..)
     )
 where
 
-import KSP.Datatype.System
+import System.KSP.Datatype.Object
+import System.KSP.Datatype.System
+
+ --------
+-- Body --
+ --------
+
+type DeltaV = Double
+
+data Body
+    = Railed  { object :: Object, celestial :: Celestial }
+    | Movable { object :: Object, celestial :: Celestial, deltaV :: DeltaV }
+
+instance Eq Body where
+    (Railed  o1 _)   == (Railed  o2 _)   = o1 == o2
+    (Movable o1 _ _) == (Movable o2 _ _) = o1 == o2
+
+instance Show Body
+    where
+      showsPrec p (Railed  o c)
+          =  ((name o) ++)
+          . (showString ": ")
+          . ((show c) ++)
+      showsPrec p (Movable o c d)
+          =  ((name o) ++)
+          . (showString ", dV:")
+          . ((show d) ++)
+          . ((show c) ++)
 
 
  -------------
@@ -46,3 +76,7 @@ instance Show Celestial
           where
             -- fun []     = (showChar '\n')
             -- fun (x:xs) = (showChar '\n') . (showsPrec d $ snd x) . (fun xs)
+                           
+      
+            
+                                          

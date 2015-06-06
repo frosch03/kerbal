@@ -1,4 +1,4 @@
-module KSP.Datatypes
+module System.KSP.Datatypes
     ( Object(..)
     , Celestial(..)
     , Body(..)
@@ -18,5 +18,5 @@ module KSP.Datatypes
 
 where
 
-import KSP.DataConstructors
-import KSP.DataDestructors
+import System.KSP.DataConstructors
+import System.KSP.DataDestructors

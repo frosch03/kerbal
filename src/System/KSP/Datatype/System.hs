@@ -1,7 +1,7 @@
-module KSP.Datatype.System
+module System.KSP.Datatype.System
 where
 
-import KSP.Datatype.Orbit
+import System.KSP.Datatype.Orbit
 
 
 data System b a
