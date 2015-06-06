@@ -15,21 +15,20 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules: 
-                   System.KSP.DataConstructors,
+  exposed-modules: System.KSP.DataConstructors,
                    System.KSP.DataDestructors,
                    System.KSP.Datatypes,
                    System.KSP.Universe,
                    System.KSP.OrbitalMechanics,
-                   System.KSP.Auxillary
+                   System.KSP.Auxiliary
 
   other-modules: System.KSP.Datatype.Object,
                  System.KSP.Datatype.Body,
                  System.KSP.Datatype.Orbit,
                  System.KSP.Datatype.System
   
-  other-extensions: GADT
-                  , FlexibleInstances
+  -- other-extensions: GADT
+  --                 , FlexibleInstances
   
   build-depends: base >=4.6
   
